@@ -1,0 +1,115 @@
+<!--
+  Direitos Autorais (c) 2025 Renata Veras Venturim
+  Licença MIT
+-->
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <base target="_top">  
+  <?!=Chamar("Estilo1") ?>  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+<body>
+  <header>
+    <nav> 
+      <img src="https://github.com/RenataVerasVenturim/Interface_usuario/blob/main/logo.png?raw=true" alt="logo uff">
+    </nav>
+  </header>
+    
+  <main>
+    <div class="container">
+      <h3>Autoagendamento</h3>
+      <p>Escolha seu horário disponível para atendimento</p>
+
+      <form id="formAgendamento">
+        <div class="input-field">
+          <label for="nome" >Nome:</label>
+          <input type="text" id="nome" name="nome" required >
+        </div>
+        <div class="input-field">
+          <label for="unidade" >Unidade:</label>
+          <input type="text" id="unidade" name="unidade" required>
+        </div>
+        <div class="input-field" >
+          <label for="email">E-mail:</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="input-field">
+          <label for="data">Data:</label>
+          <input type="text" id="data" name="data" placeholder="Escolha uma data" required>
+        </div>
+        <div class="input-field">
+          <label for="hora">Horário:</label>
+          <select id="hora" name="hora" required>
+            <option value="">Selecione uma data</option>
+          </select>
+        </div>
+        <div class="input-field">
+          <label for="duracao">Duração (minutos):</label>
+          <input type="number" id="duracao" name="duracao" min="60" max="60" step="15" value="60" readonly>
+        </div>
+        <div class="input-field-obs">
+          <label for="obs" >Assunto:</label>
+          <textarea id="obs" name="obs" rows="4" maxlength="340" placeholder="Digite o assunto do agendamento"></textarea>
+          <div id="contador">0 / 340 caracteres</div>
+        </div>
+
+        <button id="btnAgendar" class="btn waves-effect waves-light" type="submit">Agendar</button>
+      </form>
+
+    
+    <div id="mensagemAgendamento" style="display:none;"></div>
+    <div id="mensagemHorarios" style="display:none;"></div>
+
+    </div>
+
+    <div id="Componentes">
+      <div id="CaixaMensagem">
+        <div id="TituloMsg"></div>
+        <div id="CorpoMsg"></div>
+        <div id="RodapeMsg"></div>
+      </div>
+    </div>
+    <script>
+google.script.run.withSuccessHandler(function(calendarId){
+   
+    window.CALENDAR_ID = calendarId; // salvar para usar em outros scripts
+}).getCalendarId();
+
+emailInput= document.getElementById('email');
+nomeInput= document.getElementById('nome');
+unidadeInput= document.getElementById('unidade');
+
+emailInput.addEventListener("input", function () {
+  this.value = this.value.toUpperCase();
+});
+
+nomeInput.addEventListener("input", function () {
+  this.value = this.value.toUpperCase();
+});
+unidadeInput.addEventListener("input", function () {
+  this.value = this.value.toUpperCase();
+});
+    </script>
+     <?!=Chamar("Form-js1")?> 
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Universidade Federal Fluminense. Todos os direitos reservados.</p>
+    <br><p>PROPPI – Pró-Reitoria de Pesquisa, Pós-Graduação e Inovação<p>
+    <p>DIVISÃO FINANCEIRA, CONTÁBIL E DE PATRIMÔNIO (DFCP)</p>
+    <br>
+    <p>Endereço: Rua Miguel de Frias, 9, 3º andar, sala 310, Icaraí, Niterói – RJ. CEP: 24220-900</p>
+    <p id="contact">Contato: compras.proppi@id.uff.br</p>
+    <br>
+    <p>Os dados exibidos nesta página são acessíveis de acordo com a Lei Geral de Proteção de Dados (LGPD). Tratam-se de informações necessárias à execução de políticas públicas previstas em leis e regulamentos.</p>
+  </footer>
+</body>
+</html>
+
+
+
+
+
