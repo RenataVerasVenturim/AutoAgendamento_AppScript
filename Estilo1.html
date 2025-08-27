@@ -1,0 +1,168 @@
+<style>
+
+/*Estilos das caixas de alertas*/
+
+#Componentes{
+   display: none;
+   opacity: .8;
+   position: fixed;
+   top: 0px;
+   left:0px;
+   background: #FFF;
+   width: 100%;
+   z-index:10;   
+   }
+   
+   #CaixaMensagem {
+    display: none;
+    position: fixed;
+    background: #000;
+    border-radius: 2px;
+    max-width: 300px;
+    z-index:10; 
+    margin-left:35%;  
+   }
+   
+   #CaixaMensagem > div {background: #FFF; margin: 2px}
+   #CaixaMensagem > div > #TituloMsg{background: #F0F0F0; font-size: 22px; padding:10px;color: #000;}
+   #CaixaMensagem > div > #CorpoMsg {background: #FFF; font-size: 15px; padding:20px;color: #000;text-align:center;}
+   #CaixaMensagem > div > #RodapeMsg{background: #fff; padding:10px;text-align:center;}
+
+/*Estilos da página*/
+body{
+background-color: #eaeaea;
+background-attachment: fixed;
+background-repeat: no-repeat;
+font-family: 'Nunito Sans','Arial','Times New Roman', Times, serif;
+color: #004f9f !important
+}
+
+/* Estilos do header e da navegação */
+header nav{
+    background-color: #004f9f;
+    padding: 3px;
+    display:flex;
+    align-items: center;
+    border-radius: 5px;
+    box-shadow: 2px 2px 2px #000;   
+    position: relative;
+}
+
+nav img{
+width: 200px;
+height: 68px;
+margin-right:10px;
+}
+
+/*CORPO*/
+main {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 25px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+main h1, main h2, main h3 {
+  color: #004f9f;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+label {
+  font-weight: 600;
+  color: #333;
+}
+
+input, select, textarea {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+  width: 100%;
+  transition: border 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.input-field-obs {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 600px; /* aumenta a largura máxima */
+}
+
+.input-field-obs label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #333;
+}
+
+.input-field-obs textarea {
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+  min-height: 100px; /* altura mínima */
+  resize: vertical; /* permite redimensionar para mais linhas se quiser */
+  box-sizing: border-box;
+}
+
+/* contador de caracteres */
+#contador {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #666;
+  text-align: right;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #004f9f;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0,79,159,0.3);
+}
+.flatpickr-day.dia-disponivel {
+    background-color: #4caf50;
+    color: white;
+    border-radius: 50%;
+  }
+
+.flatpickr-day.dia-disponivel:hover {
+    background-color: #45a049;
+  }
+
+button {
+  background-color: #004f9f;
+  color: #fff;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+button:hover {
+  background-color: #003570;
+}
+
+/**/
+
+/* Estilos do footer */
+footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 2px rgb(2, 0, 0);   
+}
+
+</style>
