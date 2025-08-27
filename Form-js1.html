@@ -1,0 +1,190 @@
+<!-- <!--
+  Direitos Autorais (c) 2025 Renata Veras Venturim
+
+  Licença MIT
+
+  A permissão é concedida, gratuitamente, a qualquer pessoa que obtenha uma cópia
+  deste software e dos arquivos de documentação associados (o "Software"), para negociar
+  no Software sem restrições, incluindo, sem limitação, os direitos de uso, cópia,
+  modificação, fusão, publicação, distribuição, sublicenciamento e/ou venda de cópias do Software,
+  e de permitir que as pessoas a quem o Software é fornecido o façam, sujeitas às seguintes condições:
+
+  O aviso de direitos autorais acima e este aviso de permissão devem ser incluídos em todas as cópias
+  ou partes substanciais do Software.
+
+  **Atribution Clause:**
+  Os usuários deste software são obrigados a manter os créditos originais e as atribuições do projeto
+  em quaisquer cópias ou derivações do Software.
+
+  O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIA DE QUALQUER TIPO, EXPRESSA OU IMPLÍCITA,
+  INCLUINDO, MAS NÃO SE LIMITANDO ÀS GARANTIAS DE COMERCIALIZAÇÃO, ADEQUAÇÃO A UM PROPÓSITO ESPECÍFICO
+  E NÃO VIOLAÇÃO. EM NENHUM CASO OS AUTORES OU DETENTORES DOS DIREITOS AUTORAIS SERÃO RESPONSÁVEIS
+  POR QUALQUER REIVINDICAÇÃO, DANOS OU OUTRAS RESPONSABILIDADES, SEJA EM AÇÃO DE CONTRATO, DELITO
+  OU DE OUTRA FORMA, DECORRENTES DE, OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS NEGOCIAÇÕES NO PROGRAMAS.
+-->
+
+<script> 
+
+
+/* ===========================
+   Variáveis globais
+   =========================== */
+
+      const textarea = document.getElementById('obs');
+      const contador = document.getElementById('contador');
+      const max = textarea.getAttribute('maxlength');
+
+      textarea.addEventListener('input', () => {
+        contador.textContent = `${textarea.value.length} / ${max} caracteres`;
+      });
+
+      const dataInput = document.getElementById("data");
+      const horaSelect = document.getElementById("hora");
+      let diasPermitidos = [];
+      const feriados = ["2025-01-01","2025-02-25","2025-04-18","2025-05-01"]; 
+
+function carregarHorariosDisponiveis(dataSelecionada) {
+  horaSelect.disabled = true;
+  horaSelect.innerHTML = '<option value="">Carregando horários...</option>';
+
+  google.script.run.withSuccessHandler(function(resultado) {
+    const divMsgHor = document.getElementById("mensagemHorarios");
+
+    if (!resultado || !resultado.horarios || resultado.horarios.length === 0) {
+      horaSelect.innerHTML = '<option value="">Nenhum horário disponível</option>';
+      divMsgHor.style.display = "block";
+      divMsgHor.innerHTML = "<p><b>" + (resultado?.debug || "Todos os horários estão ocupados nessa data.") + "</b></p>";
+      horaSelect.disabled = true;
+      return;
+    }
+
+    horaSelect.innerHTML = resultado.horarios.map(h => `<option value="${h}">${h}</option>`).join("");
+    divMsgHor.style.display = "none";
+    horaSelect.disabled = false;
+  }).getHorariosDisponiveis(dataSelecionada);
+}
+
+
+      document.addEventListener("DOMContentLoaded", function() {
+        google.script.run.withSuccessHandler(function(dias) {
+          diasPermitidos = dias;
+          console.log("Dias permitidos recebidos do servidor:", diasPermitidos);
+
+          flatpickr("#data", {
+            dateFormat: "Y-m-d", // YYYY-MM-DD
+            disable: [
+              function(date) {
+                const hoje = new Date();
+                hoje.setHours(0,0,0,0);
+                const iso = date.toISOString().split('T')[0];
+                return date < hoje || !diasPermitidos.includes(date.getDay()) || feriados.includes(iso);
+              }
+            ],
+
+            onDayCreate: function(dObj, dStr, fp, dayElem) {
+              
+              const iso = dayElem.dateObj.toISOString().split('T')[0];
+              if (diasPermitidos.includes(dayElem.dateObj.getDay()) && !feriados.includes(iso)) {
+                dayElem.classList.add('dia-disponivel');
+              }
+              if (dayElem.classList.contains("flatpickr-disabled")) {
+                dayElem.style.backgroundColor = "#eee";
+                dayElem.style.color = "#999";
+                dayElem.style.cursor = "not-allowed";
+              }
+            },
+            onChange: function(selectedDates, dateStr) {
+              if (!dateStr) return;
+              carregarHorariosDisponiveis(dateStr); // já em YYYY-MM-DD
+            }
+          });
+
+          dataInput.addEventListener("input", function() {
+            if (!this.value) return;
+            carregarHorariosDisponiveis(this.value);
+          });
+
+          dataInput.addEventListener("change", function() {
+            if (!this.value) return;
+            carregarHorariosDisponiveis(this.value);
+          });
+
+        }).getDiasPermitidos();
+      });
+
+      // Submit do formulário
+
+// Submit do formulário
+document.getElementById("formAgendamento").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const btn = document.querySelector("#formAgendamento button[type=submit]");
+  const textoOriginal = btn.textContent;
+
+  // Alterar estilo e texto do botão
+  btn.textContent = "Processando...";
+  btn.disabled = true;
+  btn.style.opacity = "0.7";
+  btn.style.cursor = "not-allowed";
+
+  // Captura os dados do formulário
+  const dados = {
+    nome: document.getElementById("nome").value.trim(),
+    unidade: document.getElementById("unidade").value,
+    email: document.getElementById("email").value.trim(),
+    data: document.getElementById("data").value,
+    hora: document.getElementById("hora").value,
+    duracao: document.getElementById("duracao").value,
+    obs: document.getElementById("obs").value
+  };
+
+  // Validação do e-mail institucional
+  const regexUFF = /^[a-zA-Z0-9._%+-]+@ID\.UFF\.BR$/;
+  if (!regexUFF.test(dados.email)) {
+    alert("Apenas e-mails do domínio @id.uff.br são permitidos.");
+    restaurarBotao();
+    return;
+  }
+
+  // Validação do nome
+  if (!dados.nome || dados.nome.length < 3) {
+    alert("Nome inválido. Digite pelo menos 3 caracteres.");
+    restaurarBotao();
+    return;
+  }
+
+  // Validação da data
+  const regexData = /^\d{4}-\d{2}-\d{2}$/;
+  if (!regexData.test(dados.data)) {
+    alert("Data inválida. Selecione uma data válida (formato: YYYY-MM-DD).");
+    restaurarBotao();
+    return;
+  }
+
+  // Envia os dados para o Google Apps Script
+  google.script.run
+    .withSuccessHandler(function(resposta) {
+      const divMsgAg = document.getElementById("mensagemAgendamento");
+      divMsgAg.style.display = "block";
+      divMsgAg.innerHTML = `<p>${resposta.mensagem || resposta}</p>`; 
+
+      restaurarBotao();
+    })
+    .withFailureHandler(function(erro) {
+      alert("Erro no agendamento: " + erro.message);
+      restaurarBotao();
+    })
+    .processarAgendamento(dados);
+
+  function restaurarBotao() {
+    btn.textContent = textoOriginal;
+    btn.disabled = false;
+    btn.style.opacity = "1";
+    btn.style.cursor = "pointer";
+  }
+});
+
+
+
+</script>
+
