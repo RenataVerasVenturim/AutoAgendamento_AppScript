@@ -37,6 +37,7 @@ RNF04 – O sistema deve seguir a LGPD, garantindo proteção de dados pessoais.
 - VS Code
 - GitHub
 - Git
+- Node
 - Clasp
 - Planilhas Google
 - Google Agenda
