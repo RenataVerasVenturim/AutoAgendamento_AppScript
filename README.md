@@ -14,31 +14,43 @@ Agendamento externo à google agenda da unidade com base em horários e dias def
 1. **Abrir PowerShell**  
    Clicar em *Windows* > botão direito > *Executar como administrador*.  
    Verificar se:
-   ```powershell
+   ```
    Get-ExecutionPolicy
+   ````
 Retorna Restricted.
 Se sim, executar:
-  Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
-2. **Instalar clasp via terminal no VS Code**
+  ```
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+````
+2.**Instalar clasp via terminal no VS Code**
 
    ```
-   npm install -g @google/clasp
-
+npm install -g @google/clasp
+````
 3. **Fazer login no clasp**
    
    ```
    clasp login
+   ````
+   
 4. **Clonar projeto do github**
    ```
    git clone https://github.com/RenataVerasVenturim/AutoAgendamento_AppScript.git
 
+   ````
+
 5. **Criar novo projeto App script**
+   
    ```
-  clasp create --type standalone --title "AutoAgendamento_AppScript"
+   clasp create --type standalone --title "AutoAgendamento_AppScript"
+   ````
+
 6. **Subir código para o projeto App Script criado**
+
    ```
-clasp push
+   clasp push
+   ````
 
 **ALTERANDO PROJETO QUE ESTÁ NO APP SCRIPT**
   
@@ -46,19 +58,35 @@ clasp push
 
    ```
    clasp clone [código do projeto no app script]
-
+   ````
+   
 5.**Enviar alterações para o projeto Apps Script**
 
    ```
    clasp push
- 
+   ````
+
 6.**Enviar alterações para o projeto GitHub** (obs: salvar o readme.me)
 
    ```
   git init
+   ````
+
+   ```
   git remote add origin https://github.com/RenataVerasVenturim/AppScript_Auxilio_Financeiro.git
+   ````
+```
   git fetch origin
+   ````
+```
   git add .
+ ````
+```
   git commit -m "Atualização do projeto Apps Script"
+   ````
+```
   git branch -M main
+ ````
+```
   git push -u origin main
+   ````
