@@ -83,7 +83,10 @@ npm install -g @google/clasp
    ```
    clasp push
    ````
-
+7. **Incluir SERVIÇOS AO PROJETO (APIS)**
+   <P>
+      Com o projeto app script aberto em editor, clicar em "Serviços"> + > Calendar e Sheets
+   </P>
 **ALTERANDO PROJETO QUE ESTÁ NO APP SCRIPT**
   
 1. **Clonar projeto do Apps Script** (acesse confiugurações do projeto no app script>código do script)
