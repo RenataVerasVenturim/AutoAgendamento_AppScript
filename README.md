@@ -83,19 +83,19 @@ npm install -g @google/clasp
 
 **ALTERANDO PROJETO QUE ESTÁ NO APP SCRIPT**
   
-4. **Clonar projeto do Apps Script** (acesse confiugurações do projeto no app script>código do script)
+1. **Clonar projeto do Apps Script** (acesse confiugurações do projeto no app script>código do script)
 
    ```
    clasp clone [código do projeto no app script]
    ````
    
-5.**Enviar alterações para o projeto Apps Script**
+2.**Enviar alterações para o projeto Apps Script**
 
    ```
    clasp push
    ````
 
-6.**Enviar alterações para o projeto GitHub** (obs: salvar o readme.me)
+3.**Enviar alterações para o projeto GitHub** (obs: salvar o readme.me)
 
    ```
   git init
