@@ -1,5 +1,8 @@
 # AutoAgendamento_AppScript
-Agendamento externo à google agenda da unidade com base em horários e dias definidos e com check google agenda
+Agendamento externo à google agenda da unidade com base em horários e dias definidos em planilha sheets e com check google agenda. E mail de confirmação com botão de cancelar disponível ao usuário. Integração com google sheets, agenda google, google meet e gmail.
+
+<img width="1365" height="630" alt="image" src="https://github.com/user-attachments/assets/00896768-0758-4265-9230-c22fab51268a" />
+
 
 # Programas necessários
 
