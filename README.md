@@ -20,6 +20,8 @@ RF06 – O sistema deve registrar automaticamente todos os agendamentos em uma p
 
 RF07 – O sistema deve enviar um aviso por e-mail ao usuário agendado com 24h de antecedência do compromisso.
 
+RF08 – O sistema não deve permitir agendamento para alunos que não estão com certificado pronto (base sheets)
+
 # Requisitos Não Funcionais :
 
 RNF01 – O sistema deve estar disponível via navegador web.
