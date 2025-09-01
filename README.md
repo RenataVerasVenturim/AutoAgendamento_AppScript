@@ -26,7 +26,7 @@ RNF01 – O sistema deve estar disponível via navegador web.
 
 RNF02 – O sistema deve possuir interface simples e intuitiva.
 
-RNF03 – O tempo de resposta do sistema não deve exceder 3 segundos por operação.
+RNF03 – O sistema deve seguir padrões de segurança da informação, como sanitizar inputs do lado do servidor, rating limit, confidencialidade com base na conta id.uff.br
 
 RNF04 – O sistema deve seguir a LGPD, garantindo proteção de dados pessoais.
 
@@ -87,6 +87,17 @@ npm install -g @google/clasp
    <P>
       Com o projeto app script aberto em editor, clicar em "Serviços"> + > Calendar e Sheets
    </P>
+8. **Inserir propertiers para proteção de dados de id do calendar google**
+<p>Em https://calendar.google.com/, clique nas engrenagens >configurações> Clique na agenda no canto esquerdo embaixo > Em "Integrar agenda"> copie o ID (algo como "abcdefghijk123456789@group.calendar.google.com")
+<br> 
+<P>No projeto app script, vá em engrenagens> Em "propriedade do script", crie a variável de ambiente "calendarId"=[ID DA AGENDA]
+<br> No código, para que o meet seja criado, precisa ser na agenda primary "const calendarId = "primary""</P>
+
+9. **Implantar projeto**
+<p>
+   Clicar em implantar>Gerenciar Implantações> app web > Versão nova> Inserir descrição> Executar como "Eu (SEU E MAIL)". Quem pode acessar "Qualquer pessoa em Universidade Federal Fluminense"
+</p>
+   
 **ALTERANDO PROJETO QUE ESTÁ NO APP SCRIPT**
   
 1. **Clonar projeto do Apps Script** (acesse confiugurações do projeto no app script>código do script)
@@ -126,8 +137,4 @@ npm install -g @google/clasp
   git push -u origin main
    ````
 
-**Inserir propertiers para proteção de dados de id do calendar google**
-<p>Em https://calendar.google.com/, clique nas engrenagens >configurações> Clique na agenda no canto esquerdo embaixo > Em "Integrar agenda"> copie o ID (algo como "abcdefghijk123456789@group.calendar.google.com")
-<br> 
-No projeto app script, vá em engrenagens> Em "propriedade do script", crie a variável de ambiente "calendarId"=[ID DA AGENDA]
-<br> No código, para que o meet seja criado, precisa ser na agenda primary "const calendarId = "primary""
+
