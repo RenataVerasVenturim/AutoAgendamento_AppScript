@@ -1,48 +1,46 @@
-<!-- <!--
-  Direitos Autorais (c) 2025 Renata Veras Venturim
+<!--
+Direitos Autorais (c) 2025 Renata Veras Venturim
+Licença MIT
 
-  Licença MIT
+A permissão é concedida, gratuitamente, a qualquer pessoa que obtenha uma cópia deste software
+e dos arquivos de documentação associados (o "Software"), para negociar no Software sem restrições,
+incluindo, sem limitação, os direitos de uso, cópia, modificação, fusão, publicação, distribuição,
+sublicenciamento e/ou venda de cópias do Software, e permitir que outros o façam, sujeitas às seguintes condições:
 
-  A permissão é concedida, gratuitamente, a qualquer pessoa que obtenha uma cópia
-  deste software e dos arquivos de documentação associados (o "Software"), para negociar
-  no Software sem restrições, incluindo, sem limitação, os direitos de uso, cópia,
-  modificação, fusão, publicação, distribuição, sublicenciamento e/ou venda de cópias do Software,
-  e de permitir que as pessoas a quem o Software é fornecido o façam, sujeitas às seguintes condições:
+O aviso de direitos autorais acima e este aviso de permissão devem ser incluídos em todas as cópias ou partes substanciais do Software.
 
-  O aviso de direitos autorais acima e este aviso de permissão devem ser incluídos em todas as cópias
-  ou partes substanciais do Software.
+**Atribution Clause:** Os usuários deste software devem manter os créditos originais e as atribuições do projeto em quaisquer cópias ou derivações do Software.
 
-  **Atribution Clause:**
-  Os usuários deste software são obrigados a manter os créditos originais e as atribuições do projeto
-  em quaisquer cópias ou derivações do Software.
-
-  O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIA DE QUALQUER TIPO, EXPRESSA OU IMPLÍCITA,
-  INCLUINDO, MAS NÃO SE LIMITANDO ÀS GARANTIAS DE COMERCIALIZAÇÃO, ADEQUAÇÃO A UM PROPÓSITO ESPECÍFICO
-  E NÃO VIOLAÇÃO. EM NENHUM CASO OS AUTORES OU DETENTORES DOS DIREITOS AUTORAIS SERÃO RESPONSÁVEIS
-  POR QUALQUER REIVINDICAÇÃO, DANOS OU OUTRAS RESPONSABILIDADES, SEJA EM AÇÃO DE CONTRATO, DELITO
-  OU DE OUTRA FORMA, DECORRENTES DE, OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS NEGOCIAÇÕES NO PROGRAMAS.
+O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIA DE QUALQUER TIPO, EXPRESSA OU IMPLÍCITA,
+INCLUINDO, MAS NÃO SE LIMITANDO ÀS GARANTIAS DE COMERCIALIZAÇÃO, ADEQUAÇÃO A UM PROPÓSITO ESPECÍFICO E NÃO VIOLAÇÃO.
+EM NENHUM CASO OS AUTORES OU DETENTORES DOS DIREITOS AUTORAIS SERÃO RESPONSÁVEIS POR QUALQUER REIVINDICAÇÃO,
+DANOS OU OUTRAS RESPONSABILIDADES, SEJA EM AÇÃO DE CONTRATO, DELITO OU DE OUTRA FORMA, DECORRENTES DE,
+OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS NEGOCIAÇÕES NO PROGRAMA.
 -->
 
-<script> 
+<script>
+/* ===========================
+   Variáveis globais
+=========================== */
+const textarea = document.getElementById('obs');
+const contador = document.getElementById('contador');
+const max = textarea.getAttribute('maxlength');
+
+textarea.addEventListener('input', () => {
+  contador.textContent = `${textarea.value.length} / ${max} caracteres`;
+});
+
+const dataInput = document.getElementById("data");
+const horaSelect = document.getElementById("hora");
+const duracaoInput = document.getElementById("duracao");
+
+let diasPermitidos = [];
+let feriados = [];
 
 
 /* ===========================
-   Variáveis globais
-   =========================== */
-
-      const textarea = document.getElementById('obs');
-      const contador = document.getElementById('contador');
-      const max = textarea.getAttribute('maxlength');
-
-      textarea.addEventListener('input', () => {
-        contador.textContent = `${textarea.value.length} / ${max} caracteres`;
-      });
-
-      const dataInput = document.getElementById("data");
-      const horaSelect = document.getElementById("hora");
-      let diasPermitidos = [];
-      const feriados = ["2025-01-01","2025-02-25","2025-04-18","2025-05-01"]; 
-
+   Carregar horários disponíveis
+=========================== */
 function carregarHorariosDisponiveis(dataSelecionada) {
   horaSelect.disabled = true;
   horaSelect.innerHTML = '<option value="">Carregando horários...</option>';
@@ -53,68 +51,79 @@ function carregarHorariosDisponiveis(dataSelecionada) {
     if (!resultado || !resultado.horarios || resultado.horarios.length === 0) {
       horaSelect.innerHTML = '<option value="">Nenhum horário disponível</option>';
       divMsgHor.style.display = "block";
-      divMsgHor.innerHTML = "<p><b>" + (resultado?.debug || "Todos os horários estão ocupados nessa data.") + "</b></p>";
+      divMsgHor.innerHTML = "<p><b>Todos os horários estão ocupados nessa data.</b></p>";
       horaSelect.disabled = true;
       return;
     }
 
-    horaSelect.innerHTML = resultado.horarios.map(h => `<option value="${h}">${h}</option>`).join("");
+    horaSelect.innerHTML = resultado.horarios
+      .map(h => `<option value="${h}">${h}</option>`)
+      .join("");
     divMsgHor.style.display = "none";
     horaSelect.disabled = false;
+    duracaoInput.value = resultado.duracao;
   }).getHorariosDisponiveis(dataSelecionada);
 }
 
+/* ===========================
+   Inicialização DOM
+=========================== */
+document.addEventListener("DOMContentLoaded", function() {
+  // Primeiro buscamos os feriados
+  google.script.run.withSuccessHandler(function(listaFeriados) {
+    feriados = listaFeriados || [];
+    console.log("Feriados carregados:", feriados);
 
-      document.addEventListener("DOMContentLoaded", function() {
-        google.script.run.withSuccessHandler(function(dias) {
-          diasPermitidos = dias;
-          console.log("Dias permitidos recebidos do servidor:", diasPermitidos);
+    // Depois buscamos os dias permitidos
+    google.script.run.withSuccessHandler(function(dias) {
+      diasPermitidos = dias;
+      console.log("Dias permitidos:", diasPermitidos);
 
-          flatpickr("#data", {
-            dateFormat: "Y-m-d", // YYYY-MM-DD
-            disable: [
-              function(date) {
-                const hoje = new Date();
-                hoje.setHours(0,0,0,0);
-                const iso = date.toISOString().split('T')[0];
-                return date < hoje || !diasPermitidos.includes(date.getDay()) || feriados.includes(iso);
-              }
-            ],
-
-            onDayCreate: function(dObj, dStr, fp, dayElem) {
-              
-              const iso = dayElem.dateObj.toISOString().split('T')[0];
-              if (diasPermitidos.includes(dayElem.dateObj.getDay()) && !feriados.includes(iso)) {
-                dayElem.classList.add('dia-disponivel');
-              }
-              if (dayElem.classList.contains("flatpickr-disabled")) {
-                dayElem.style.backgroundColor = "#eee";
-                dayElem.style.color = "#999";
-                dayElem.style.cursor = "not-allowed";
-              }
-            },
-            onChange: function(selectedDates, dateStr) {
-              if (!dateStr) return;
-              carregarHorariosDisponiveis(dateStr); // já em YYYY-MM-DD
-            }
-          });
-
-          dataInput.addEventListener("input", function() {
-            if (!this.value) return;
-            carregarHorariosDisponiveis(this.value);
-          });
-
-          dataInput.addEventListener("change", function() {
-            if (!this.value) return;
-            carregarHorariosDisponiveis(this.value);
-          });
-
-        }).getDiasPermitidos();
+      // Agora inicializamos o calendário
+      flatpickr("#data", {
+        dateFormat: "Y-m-d",
+        disable: [
+          function(date) {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            const iso = date.toISOString().split('T')[0];
+            return date < hoje || !diasPermitidos.includes(date.getDay()) || feriados.includes(iso);
+          }
+        ],
+        onDayCreate: function(dObj, dStr, fp, dayElem) {
+          const iso = dayElem.dateObj.toISOString().split('T')[0];
+          if (diasPermitidos.includes(dayElem.dateObj.getDay()) && !feriados.includes(iso)) {
+            dayElem.classList.add('dia-disponivel');
+          }
+          if (dayElem.classList.contains("flatpickr-disabled")) {
+            dayElem.style.backgroundColor = "#eee";
+            dayElem.style.color = "#999";
+            dayElem.style.cursor = "not-allowed";
+          }
+        },
+        onChange: function(selectedDates, dateStr) {
+          if (!dateStr) return;
+          carregarHorariosDisponiveis(dateStr);
+        }
       });
 
-      // Submit do formulário
+      dataInput.addEventListener("input", function() {
+        if (!this.value) return;
+        carregarHorariosDisponiveis(this.value);
+      });
 
-// Submit do formulário
+      dataInput.addEventListener("change", function() {
+        if (!this.value) return;
+        carregarHorariosDisponiveis(this.value);
+      });
+
+    }).getDiasPermitidos();
+  }).getFeriados();
+});
+
+/* ===========================
+   Submit do formulário
+=========================== */
 document.getElementById("formAgendamento").addEventListener("submit", function(e) {
   e.preventDefault();
 
@@ -166,8 +175,16 @@ document.getElementById("formAgendamento").addEventListener("submit", function(e
     .withSuccessHandler(function(resposta) {
       const divMsgAg = document.getElementById("mensagemAgendamento");
       divMsgAg.style.display = "block";
-      divMsgAg.innerHTML = `<p>${resposta.mensagem || resposta}</p>`; 
 
+      if (!resposta.sucesso) {
+        divMsgAg.style.color = "red";
+        divMsgAg.innerHTML = `<p><b>${resposta.mensagem}</b></p>`;
+        restaurarBotao();
+        return;
+      }
+
+      divMsgAg.style.color = "green";
+      divMsgAg.innerHTML = `<p>${resposta.mensagem}</p>`;
       restaurarBotao();
     })
     .withFailureHandler(function(erro) {
@@ -184,7 +201,11 @@ document.getElementById("formAgendamento").addEventListener("submit", function(e
   }
 });
 
-
+/* ===========================
+   Recuperar Calendar ID
+=========================== */
+google.script.run.withSuccessHandler(function(calendarId) {
+  window.CALENDAR_ID = calendarId; // salvar para usar em outros scripts
+}).getCalendarId();
 
 </script>
-
