@@ -20,7 +20,7 @@ RF06 – O sistema deve registrar automaticamente todos os agendamentos em uma p
 
 RF07 – O sistema deve enviar um aviso por e-mail ao usuário agendado com 24h de antecedência do compromisso.
 
-# Requisitos Não Funcionais (exemplos que poderiam complementar):
+# Requisitos Não Funcionais :
 
 RNF01 – O sistema deve estar disponível via navegador web.
 
