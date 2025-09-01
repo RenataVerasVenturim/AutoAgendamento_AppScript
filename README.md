@@ -92,6 +92,7 @@ npm install -g @google/clasp
    ````
 
 **Inserir propertiers para proteção de dados de id do calendar google**
-Em https://calendar.google.com/, clique nas engrenagens >configurações> Clique na agenda no canto esquerdo embaixo > Em "Integrar agenda"> copie o ID (algo como "abcdefghijk123456789@group.calendar.google.com")
+<p>Em https://calendar.google.com/, clique nas engrenagens >configurações> Clique na agenda no canto esquerdo embaixo > Em "Integrar agenda"> copie o ID (algo como "abcdefghijk123456789@group.calendar.google.com")
 <br> 
 No projeto app script, vá em engrenagens> Em "propriedade do script", crie a variável de ambiente "calendarId"=[ID DA AGENDA]
+<br> No código, para que o meet seja criado, precisa ser na agenda primary "const calendarId = "primary""
