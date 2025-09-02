@@ -1,4 +1,4 @@
-<!--
+/*
 Licença MIT
 
 Copyright (c) 2025 RENATA VERAS VENTURIM
@@ -25,7 +25,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-"""-->
+*/
 
 
 const calendarId = "primary";
@@ -55,47 +55,49 @@ function podeAgendar(email) {
 /* ===========================
    Lê a configuração de horários do Sheets
 =========================== */
-function getConfiguracoes() {
+/**
+ * Busca configurações de uma aba específica do Sheets.
+ * Se a aba for "Config_Agendamento", retorna array de objetos {dia, inicio, fim, intervalo, ativo}
+ * Se a aba for "Config_Feriados", retorna array de strings YYYY-MM-DD
+ */
+function getConfigPlanilha(sheetName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(SHEET_CONFIG);
-  const data = sheet.getDataRange().getValues();
-  const config = [];
-
-  for (let i = 1; i < data.length; i++) {
-    config.push({
-      dia: data[i][0],            // Segunda, Terça, etc.
-      inicio: data[i][1],         // HH:mm
-      fim: data[i][2],            // HH:mm
-      intervalo: parseInt(data[i][3]) || 60, // minutos
-      ativo: data[i][4] === "SIM" // true/false
-    });
-  }
-
-  return config;
-}
-/*Carregar feriados da sheets*/
-function getFeriados() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("Config_Feriados");
+  const sheet = ss.getSheetByName(sheetName);
   if (!sheet) return [];
 
-  const valores = sheet.getRange("A2:A").getValues();
-  return valores
-    .flat()
-    .filter(d => d)
-    .map(d => {
-      if (d instanceof Date) {
-        return Utilities.formatDate(d, Session.getScriptTimeZone(), "yyyy-MM-dd");
-      }
-      return d;
-    });
+  const data = sheet.getDataRange().getValues();
+
+  if (sheetName === SHEET_CONFIG) {
+    // Configuração de horários
+    const config = [];
+    for (let i = 1; i < data.length; i++) {
+      config.push({
+        dia: data[i][0],                 // Segunda, Terça, etc.
+        inicio: data[i][1],              // HH:mm
+        fim: data[i][2],                 // HH:mm
+        intervalo: parseInt(data[i][3]) || 60, // minutos
+        ativo: data[i][4] === "SIM"      // true/false
+      });
+    }
+    return config;
+  } else if (sheetName === "Config_Feriados") {
+    // Feriados
+    return data
+      .slice(1) // Ignora cabeçalho
+      .flat()
+      .filter(d => d)
+      .map(d => (d instanceof Date) ? Utilities.formatDate(d, Session.getScriptTimeZone(), "yyyy-MM-dd") : d);
+  }
+
+  return data; // Retorna cru se aba diferente
 }
+
 
 /* ===========================
    Retorna os dias da semana permitidos
 =========================== */
 function getDiasPermitidos() {
-  const config = getConfiguracoes();
+  const config = getConfigPlanilha(SHEET_CONFIG);
   const dias = [];
   const mapa = {
     "Domingo": 0, "Segunda": 1, "Terça": 2, "Quarta": 3,
@@ -142,7 +144,7 @@ function formatHoraString(valor) {
    Retorna os horários disponíveis para uma data
 =========================== */
 function getHorariosDisponiveis(dataSelecionada) {
-  const config = getConfiguracoes();
+  const config = getConfigPlanilha(SHEET_CONFIG);
   const dataParts = parseDataYYYYMMDD(dataSelecionada);
   if (!dataParts) return { horarios: [], debug: "Data inválida" };
 
@@ -192,8 +194,6 @@ function getHorariosDisponiveis(dataSelecionada) {
     return !horariosOcupados.some(ev => slotInicio < ev.fim && slotFim > ev.inicio);
   });
 
-  Logger.log({ data: dataSelecionada, diaSemana: diaSemanaStr, regra, horariosPermitidos, eventosDoDia: eventos.length });
-
   return {
     horarios: horariosLivres,
     duracao: regra.intervalo,
@@ -221,8 +221,8 @@ function registrarTentativa(email, mensagem, tipo = "INFO") {
 function canUserProceedWithLog(email) {
   const userKey = Session.getTemporaryActiveUserKey();
   const userProps = PropertiesService.getUserProperties();
-  const maxRequests = 5;
-  const windowMinutes = 1;
+  const maxRequests = 3;
+  const windowMinutes = 30;
   const now = Date.now();
 
   let data = userProps.getProperty("rateLimit_" + userKey);
@@ -246,7 +246,7 @@ function canUserProceedWithLog(email) {
    Verificação de usuário institucional
 =========================== */
 function verificarUsuarioUFF() {
-  const user = Session.getEffectiveUser().getEmail();
+  const user = Session.getActiveUser().getEmail();
   if (!user || !/@id\.uff\.br$/.test(user)) {
     throw new Error("Acesso restrito. Faça login com sua conta institucional.");
   }
@@ -267,9 +267,12 @@ function escaparHTML(str) {
 /* ===========================
    Processa o agendamento
 =========================== */
+/* ===========================
+   Processa o agendamento
+=========================== */
 function processarAgendamento(dados) {
   try {
-    const user = verificarUsuarioUFF(); // já lança erro se não autorizado
+    const user = verificarUsuarioUFF();
 
     if (!podeAgendar(dados.email)) {
       return { sucesso: false, mensagem: "Seu certificado ainda não está disponível para retirada." };
@@ -287,6 +290,10 @@ function processarAgendamento(dados) {
     if (!dados.nome || dados.nome.length < 3 || dados.nome.length > 50) {
       return { sucesso: false, mensagem: "Nome inválido." };
     }
+    const regexProcesso = /^(23069\.\d{6}\/\d{4}-\d{2})?$/;
+    if (!regexProcesso.test(dados.processo)) {
+      return { sucesso: false, mensagem: "Número de processo inválido. Deve estar no formato 23069.xxxxxx/AAAA-xx" };
+    }
 
     const regexData = /^\d{4}-\d{2}-\d{2}$/;
     if (!regexData.test(dados.data)) {
@@ -302,83 +309,58 @@ function processarAgendamento(dados) {
     const fim = new Date(inicio.getTime() + Number(dados.duracao) * 60000);
 
     const evento = Calendar.Events.insert({
-  summary: dados.nome + ' - ' + dados.unidade,
-  description: escaparHTML(dados.obs),
-  start: { dateTime: inicio.toISOString(), timeZone: Session.getScriptTimeZone() },
-  end: { dateTime: fim.toISOString(), timeZone: Session.getScriptTimeZone() },
-  attendees: [{ email: dados.email }],
-  conferenceData: { createRequest: { requestId: Utilities.getUuid() } },
-  reminders: {
-    useDefault: false,
-    overrides: [
-      { method: "email", minutes: 24 * 60 }, // Envia e-mail 1 dia antes
-      { method: "popup", minutes: 24 * 60 }  // Popup no Google Agenda
-    ]
-  }
-}, calendarId, { conferenceDataVersion: 1, sendUpdates: "all" });
-
+      summary: `${dados.nome} - ${dados.unidade}`,
+      description: escaparHTML(dados.obs),
+      start: { dateTime: inicio.toISOString(), timeZone: Session.getScriptTimeZone() },
+      end: { dateTime: fim.toISOString(), timeZone: Session.getScriptTimeZone() },
+      attendees: [{ email: dados.email }],
+      conferenceData: { createRequest: { requestId: Utilities.getUuid() } },
+      reminders: { useDefault: false, overrides: [{ method: "email", minutes: 1440 }] }
+    }, calendarId, { conferenceDataVersion: 1, sendUpdates: "all" });
 
     const meetLink = evento.conferenceData?.entryPoints?.[0]?.uri || "Link do Meet não disponível.";
-     
-    const eventId   = evento.id;                       // <- guardar para cancelar
+    const eventId = evento.id;
     const agendamentoId = Utilities.getUuid();
-    const token          = Utilities.getUuid();
-    const createdAt      = new Date();
-
-    // Links seguros (rota por querystring)
+    const token = Utilities.getUuid();
     const baseUrl = ScriptApp.getService().getUrl();
-    const linkCancelar  = `${baseUrl}?action=cancelar&token=${token}`;
+    const linkCancelar = `${baseUrl}?action=cancelar&token=${token}`;
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName("Agendamentos");
-      if (sheet) {
+
+    // Inserção direta na ordem das colunas da planilha
     sheet.appendRow([
-      escaparHTML(dados.nome),
-      escaparHTML(dados.unidade),
-      escaparHTML(dados.email),
-      escaparHTML(dados.data),
-      escaparHTML(dados.hora),
-      escaparHTML(dados.duracao),
-      escaparHTML(dados.obs),
-      escaparHTML(meetLink),
-      agendamentoId,
-      token,
-      eventId,
-      "Ativo",
-      createdAt
+      escaparHTML(dados.nome),       // Nome
+      escaparHTML(dados.unidade),    // Unidade
+      escaparHTML(dados.processo),   // Processo
+      escaparHTML(dados.email),      // Email
+      escaparHTML(dados.data),       // Data
+      escaparHTML(dados.hora),       // Hora
+      escaparHTML(dados.duracao),    // Tempo
+      escaparHTML(dados.obs),        // ASSUNTO
+      escaparHTML(meetLink),         // Link meet
+      agendamentoId,                 // AgendamentoID (UUID)
+      token,                         // Token (UUID)
+      eventId,                       // EventId (id do evento no Calendar)
+      "Ativo"                        // Status (“Ativo”/“Cancelado”/“Reagendado”)
     ]);
-  }
 
-    try {
-      const assunto = "Confirmação de Agendamento - UFF";
-       const corpo = `
-    Olá, ${escaparHTML(dados.nome)}!
+    // Envia e-mail de confirmação
+    const assunto = "Confirmação de Agendamento - UFF";
+    const corpo = `
+      Olá, ${escaparHTML(dados.nome)}!<br><br>
+      Seu agendamento foi realizado com sucesso.<br><br>
+      <b>Unidade:</b> ${escaparHTML(dados.unidade)}<br>
+      <b>Processo:</b> ${escaparHTML(dados.processo)}<br>
+      <b>Data:</b> ${escaparHTML(dados.data)}<br>
+      <b>Horário:</b> ${escaparHTML(dados.hora)}<br>
+      <b>Assunto:</b> ${escaparHTML(dados.obs)}<br>
+      <b>Link da reunião:</b> <a href="${meetLink}" target="_blank">${meetLink}</a><br><br>
+      Caso precise cancelar, clique <a href="${linkCancelar}" target="_blank">aqui</a>.
+    `;
+    MailApp.sendEmail({ to: dados.email, subject: assunto, htmlBody: corpo });
+
     
-    Seu agendamento foi realizado com sucesso.
-
-    📌 <b>Detalhes do Agendamento</b>
-    • Unidade: ${escaparHTML(dados.unidade)}<br>
-    • Data: ${escaparHTML(dados.data)}<br>
-    • Horário: ${escaparHTML(dados.hora)}<br>
-    • Duração: ${escaparHTML(dados.duracao)} minutos<br>
-    • Assunto: ${escaparHTML(dados.obs)}<br><br>
-
-    🔗 Link da reunião (Google Meet): <a href="${escaparHTML(meetLink)}" target="_blank">${escaparHTML(meetLink)}</a><br><br>
-
-    Caso precise:
-    • <a href="${linkCancelar}" target="_blank">Cancelar</a><br><br>
-
-    ---
-    Universidade Federal Fluminense - PROPPI<br>
-    Este é um e-mail automático, por favor, não responda.
-  `;
-
-
-      MailApp.sendEmail({ to: dados.email, subject: assunto, htmlBody: corpo });
-    } catch (erroEmail) {
-      Logger.log("Falha ao enviar e-mail: " + erroEmail.message);
-    }
-
     return {
       sucesso: true,
       mensagem: `Seu agendamento foi registrado com sucesso!<br>
@@ -387,9 +369,12 @@ function processarAgendamento(dados) {
     };
 
   } catch (err) {
+    Logger.log("Erro ao processar agendamento: " + err.message);
     return { sucesso: false, mensagem: err.message };
   }
 }
+
+
 // =========================
 // Utilitários Agendamentos
 // =========================
@@ -400,20 +385,19 @@ function _getAgSheet_() {
   if (!sheet) throw new Error("A aba 'Agendamentos' não foi encontrada.");
   return sheet;
 }
-
 function _findRowByToken_(token) {
   const sheet = _getAgSheet_();
   const data = sheet.getDataRange().getValues();
-  // Índices fixos conforme layout indicado
-  const IDX_EMAIL = 2, IDX_TOKEN = 9;
-
+  const IDX_TOKEN = 10; // Token (UUID)
+  
   for (let r = 1; r < data.length; r++) {
     if (String(data[r][IDX_TOKEN]) === String(token)) {
-      return { rowNumber: r + 1, row: data[r] }; // +1 cabeçalho
+      return { rowNumber: r + 1, row: data[r] }; // +1 pois a planilha tem cabeçalho
     }
   }
   return null;
 }
+
 
 function _assertOwnerByToken_(token) {
   const user = Session.getActiveUser().getEmail();
@@ -423,30 +407,41 @@ function _assertOwnerByToken_(token) {
   const match = _findRowByToken_(token);
   if (!match) throw new Error("Agendamento não encontrado ou token inválido.");
 
-  const emailAgendamento = String(match.row[2]).toLowerCase();
+  const emailAgendamento = String(match.row[3]).toLowerCase();
   if (emailAgendamento !== String(user).toLowerCase()) {
     throw new Error("Você não tem permissão para operar este agendamento.");
   }
   return { user, sheet: _getAgSheet_(), rowNumber: match.rowNumber, row: match.row };
 }
-
 function cancelarAgendamentoPorToken(token) {
-  const { sheet, rowNumber, row } = _assertOwnerByToken_(token);
-  const IDX_EVENTID = 10, IDX_STATUS = 11;
+  const sheet = _getAgSheet_();
+  const data = sheet.getDataRange().getValues();
+  const IDX_TOKEN = 10;
+  const IDX_STATUS = 12;
 
-  const eventId = String(row[IDX_EVENTID] || "");
-  if (eventId) {
-    try {
-      Calendar.Events.remove(calendarId, eventId);
-    } catch (err) {
-      Logger.log("Falha ao remover evento (pode já estar removido): " + err.message);
+  let linha = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][IDX_TOKEN]) === String(token)) {
+      linha = i + 1;
+      break;
     }
   }
 
-  // Atualiza status na planilha
-  sheet.getRange(rowNumber, IDX_STATUS + 1).setValue("Cancelado");
+  if (linha === -1) throw new Error("Agendamento não encontrado.");
 
+  const eventId = data[linha - 1][11]; // EventId
+  if (eventId) {
+    try {
+      Calendar.Events.remove(calendarId, eventId);
+    } catch (e) {
+      Logger.log("Erro ao remover evento: " + e.message);
+    }
+  }
+
+  sheet.getRange(linha, IDX_STATUS + 1).setValue("Cancelado");
   // Dados para e-mail
+  // Recupera os dados da linha do agendamento
+  const row = sheet.getRange(linha, 1, 1, sheet.getLastColumn()).getValues()[0];
   const nomeUsuario = row[0];         // Nome
   const emailUsuario = Session.getActiveUser().getEmail(); // E-mail do usuário logado
   const baseUrl = ScriptApp.getService().getUrl();
@@ -461,9 +456,7 @@ function cancelarAgendamentoPorToken(token) {
        <a href="${baseUrl}?page=index1.html" target="_blank">Agendar</a>
     </p>
     <p>Atenciosamente,<br>Universidade Federal Fluminense</p>
-  `
-});
-
+  `});
   return { sucesso: true, mensagem: "Agendamento cancelado com sucesso." };
 }
 
