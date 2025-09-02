@@ -36,7 +36,8 @@ const duracaoInput = document.getElementById("duracao");
 
 let diasPermitidos = [];
 let feriados = [];
-
+let diasSemHorario = []; 
+let fpCalendario;
 
 /* ===========================
    Carregar horários disponíveis
@@ -64,62 +65,101 @@ function carregarHorariosDisponiveis(dataSelecionada) {
     duracaoInput.value = resultado.duracao;
   }).getHorariosDisponiveis(dataSelecionada);
 }
+/*Array de dias sem horários disponíveis*/
+function atualizarDiasSemHorario(dataStr) {
+  google.script.run.withSuccessHandler(function(resultado) {
+    if (!resultado || !resultado.horarios || resultado.horarios.length === 0) {
+      diasSemHorario.push(dataStr); // bloqueia dia
+      fpCalendario.redraw();        // redesenha calendário
+    }
+  }).getHorariosDisponiveis(dataStr);
+}
+// Função que retorna uma Promise para verificar se há horários
+function verificarDiaSemHorario(dataStr) {
+  return new Promise((resolve) => {
+    google.script.run.withSuccessHandler(function(resultado) {
+      if (!resultado || !resultado.horarios || resultado.horarios.length === 0) {
+        diasSemHorario.push(dataStr); // bloqueia dia
+      }
+      resolve();
+    }).getHorariosDisponiveis(dataStr);
+  });
+}
 
 /* ===========================
    Inicialização DOM
 =========================== */
+
+
 document.addEventListener("DOMContentLoaded", function() {
-  // Primeiro buscamos os feriados
+
+
+  // Função que retorna uma Promise para verificar se há horários
+  function verificarDiaSemHorario(dataStr) {
+    return new Promise((resolve) => {
+      google.script.run.withSuccessHandler(function(resultado) {
+        if (!resultado || !resultado.horarios || resultado.horarios.length === 0) {
+          diasSemHorario.push(dataStr);
+        }
+        resolve();
+      }).getHorariosDisponiveis(dataStr);
+    });
+  }
+
+  // Busca feriados
   google.script.run.withSuccessHandler(function(listaFeriados) {
     feriados = listaFeriados || [];
-    console.log("Feriados carregados:", feriados);
 
-    // Depois buscamos os dias permitidos
-    google.script.run.withSuccessHandler(function(dias) {
+    // Busca dias permitidos
+    google.script.run.withSuccessHandler(async function(dias) {
       diasPermitidos = dias;
-      console.log("Dias permitidos:", diasPermitidos);
 
-      // Agora inicializamos o calendário
-      flatpickr("#data", {
-        dateFormat: "Y-m-d",
-        disable: [
-          function(date) {
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
-            const iso = date.toISOString().split('T')[0];
-            return date < hoje || !diasPermitidos.includes(date.getDay()) || feriados.includes(iso);
-          }
-        ],
-        onDayCreate: function(dObj, dStr, fp, dayElem) {
-          const iso = dayElem.dateObj.toISOString().split('T')[0];
-          if (diasPermitidos.includes(dayElem.dateObj.getDay()) && !feriados.includes(iso)) {
-            dayElem.classList.add('dia-disponivel');
-          }
-          if (dayElem.classList.contains("flatpickr-disabled")) {
-            dayElem.style.backgroundColor = "#eee";
-            dayElem.style.color = "#999";
-            dayElem.style.cursor = "not-allowed";
-          }
-        },
-        onChange: function(selectedDates, dateStr) {
-          if (!dateStr) return;
-          carregarHorariosDisponiveis(dateStr);
+      // Verifica os próximos 60 dias
+      const hoje = new Date();
+      const promises = [];
+      for (let i = 0; i < 60; i++) {
+        const d = new Date(hoje);
+        d.setDate(d.getDate() + i);
+        const iso = d.toISOString().split('T')[0];
+        promises.push(verificarDiaSemHorario(iso));
+      }
+
+      // Aguarda todas as verificações
+      await Promise.all(promises);
+
+      fpCalendario = flatpickr("#data", {
+      dateFormat: "Y-m-d",
+      minDate: new Date().fp_incr(2), // não permite datas anteriores a hoje()+2
+      maxDate: new Date().fp_incr(60), // permite até 60 dias à frente
+      disable: [
+        function(date) {
+          const iso = date.toISOString().split('T')[0];
+          return !diasPermitidos.includes(date.getDay()) || feriados.includes(iso) || diasSemHorario.includes(iso);
         }
-      });
-
-      dataInput.addEventListener("input", function() {
-        if (!this.value) return;
-        carregarHorariosDisponiveis(this.value);
-      });
-
-      dataInput.addEventListener("change", function() {
-        if (!this.value) return;
-        carregarHorariosDisponiveis(this.value);
-      });
+      ],
+      onDayCreate: function(dObj, dStr, fp, dayElem) {
+        const iso = dayElem.dateObj.toISOString().split('T')[0];
+        if (diasPermitidos.includes(dayElem.dateObj.getDay()) && !feriados.includes(iso) && !diasSemHorario.includes(iso)) {
+          dayElem.classList.add('dia-disponivel');
+        }
+        if (dayElem.classList.contains("flatpickr-disabled")) {
+          dayElem.style.backgroundColor = "#eee";
+          dayElem.style.color = "#999";
+          dayElem.style.cursor = "not-allowed";
+        }
+      },
+      onChange: function(selectedDates, dateStr) {
+        if (!dateStr) return;
+        carregarHorariosDisponiveis(dateStr);
+      }
+    });
 
     }).getDiasPermitidos();
-  }).getFeriados();
+
+  }).getConfigPlanilha("Config_Feriados");
+
 });
+
 
 /* ===========================
    Submit do formulário
@@ -137,15 +177,18 @@ document.getElementById("formAgendamento").addEventListener("submit", function(e
   btn.style.cursor = "not-allowed";
 
   // Captura os dados do formulário
+
   const dados = {
     nome: document.getElementById("nome").value.trim(),
-    unidade: document.getElementById("unidade").value,
+    unidade: document.getElementById("unidade").value.trim(),
+    processo: document.getElementById("Processo").value.trim(), 
     email: document.getElementById("email").value.trim(),
     data: document.getElementById("data").value,
     hora: document.getElementById("hora").value,
     duracao: document.getElementById("duracao").value,
     obs: document.getElementById("obs").value
   };
+
 
   // Validação do e-mail institucional
   const regexUFF = /^[a-zA-Z0-9._%+-]+@ID\.UFF\.BR$/;
@@ -161,6 +204,15 @@ document.getElementById("formAgendamento").addEventListener("submit", function(e
     restaurarBotao();
     return;
   }
+  // Validação do processo
+  const regexProcesso = /^(23069\.\d{6}\/\d{4}-\d{2})?$/;
+
+  if (!regexProcesso.test(dados.processo)) {
+  alert("Informe um número de processo válido (formato: 23069.xxxxxx/YYYY-xx).");
+  restaurarBotao();
+  return;
+  }
+
 
   // Validação da data
   const regexData = /^\d{4}-\d{2}-\d{2}$/;
