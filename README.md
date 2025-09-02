@@ -22,6 +22,8 @@ RF07 – O sistema deve enviar um aviso por e-mail ao usuário agendado com 24h 
 
 RF08 – O sistema não deve permitir agendamento para alunos que não estão com certificado pronto (base sheets)
 
+RF09 – O sistema não deve bloquear agenda em dias com horários indisponíveis e feriados
+
 # Requisitos Não Funcionais :
 
 RNF01 – O sistema deve estar disponível via navegador web.
