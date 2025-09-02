@@ -47,7 +47,7 @@ RNF04 – O sistema deve seguir a LGPD, garantindo proteção de dados pessoais.
 
 **BAIXANDO PROJETO DO GITHUB E SUBINDO PARA O APP SCRIPT**
 1. **Abrir PowerShell**  
-   Clicar em *Windows* > botão direito > *Executar como administrador*.  
+   Clicar em *Windows Powershell* > botão direito > *Executar como administrador*.  
    Verificar se:
    ```
    Get-ExecutionPolicy
