@@ -39,6 +39,7 @@ let feriados = [];
 let diasSemHorario = []; 
 let fpCalendario;
 
+
 /* ===========================
    Carregar horários disponíveis
 =========================== */
@@ -183,13 +184,22 @@ document.getElementById("formAgendamento").addEventListener("submit", function(e
   const dados = {
     nome: document.getElementById("nome").value.trim(),
     unidade: document.getElementById("unidade").value.trim(),
-    processo: document.getElementById("Processo").value.trim(), 
+    processo: document.getElementById("Processo").value.trim(),
     email: document.getElementById("email").value.trim(),
     data: document.getElementById("data").value,
     hora: document.getElementById("hora").value,
     duracao: document.getElementById("duracao").value,
-    obs: document.getElementById("obs").value
+    obs: document.getElementById("obs").value,
+    consentimento: document.getElementById("aceite").checked,
+    dataConsentimento: new Date().toISOString() 
   };
+      google.script.run
+        .withSuccessHandler(res => {
+            document.getElementById("mensagemAgendamento").innerHTML = res.mensagem;
+            document.getElementById("mensagemAgendamento").style.display = "block";
+        })
+        .processarAgendamento(dados);
+
 
 
   // Validação do e-mail institucional
