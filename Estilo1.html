@@ -22,6 +22,18 @@ OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS NEGOCIAÇÕES NO PROGRAMA.
 <style>
 
 /*Estilos das caixas de alertas*/
+.info-icon {
+  cursor: pointer;
+  margin-left: 5px;
+  color: #007bff;
+}
+
+.tooltip {
+  display: inline-block;
+  margin-left: 5px;
+  color: #555;
+  font-size: 0.85em;
+}
 
 #Componentes{
    display: none;
@@ -173,7 +185,29 @@ button {
 button:hover {
   background-color: #003570;
 }
+  .checkbox-label {
+    display: flex;
+    align-items: center; /* Centraliza o checkbox verticalmente */
+    gap: 6px; /* Espaço entre o checkbox e o texto */
+    font-size: 14px; /* Ajusta o tamanho do texto */
+    cursor: pointer;
+  }
 
+  .checkbox-label a {
+    color: #0077cc; /* Azul padrão para links */
+    text-decoration: none;
+  }
+
+  .checkbox-label a:hover {
+    text-decoration: underline; /* Dá um feedback visual ao passar o mouse */
+  }
+
+  /* Ajuste opcional para o input */
+  .checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
 /**/
 
 /* Estilos do footer */
