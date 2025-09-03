@@ -222,7 +222,7 @@ function canUserProceedWithLog(email) {
   const userKey = Session.getTemporaryActiveUserKey();
   const userProps = PropertiesService.getUserProperties();
   const maxRequests = 3;
-  const windowMinutes = 30;
+  const windowMinutes = 1;
   const now = Date.now();
 
   let data = userProps.getProperty("rateLimit_" + userKey);
@@ -327,8 +327,9 @@ function processarAgendamento(dados) {
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName("Agendamentos");
+    const consentStr = (dados.consentimento === true || String(dados.consentimento) === "true") ? "SIM" : "NÃO";
+    const dataConsentimento = consentStr === "SIM" ? new Date() : ""; // só grava timestamp se consentiu
 
-    // Inserção direta na ordem das colunas da planilha
     sheet.appendRow([
       escaparHTML(dados.nome),       // Nome
       escaparHTML(dados.unidade),    // Unidade
@@ -337,12 +338,14 @@ function processarAgendamento(dados) {
       escaparHTML(dados.data),       // Data
       escaparHTML(dados.hora),       // Hora
       escaparHTML(dados.duracao),    // Tempo
-      escaparHTML(dados.obs),        // ASSUNTO
+      escaparHTML(dados.obs),        // Assunto           
       escaparHTML(meetLink),         // Link meet
       agendamentoId,                 // AgendamentoID (UUID)
       token,                         // Token (UUID)
       eventId,                       // EventId (id do evento no Calendar)
-      "Ativo"                        // Status (“Ativo”/“Cancelado”/“Reagendado”)
+      "Ativo",                       // Status (“Ativo”/“Cancelado”/“Reagendado”)
+      consentStr,                     // Consentimento SIM/NÃO
+      Utilities.formatDate(dataConsentimento, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") // CreatedAt
     ]);
 
     // Envia e-mail de confirmação
@@ -355,6 +358,7 @@ function processarAgendamento(dados) {
       <b>Data:</b> ${escaparHTML(dados.data)}<br>
       <b>Horário:</b> ${escaparHTML(dados.hora)}<br>
       <b>Assunto:</b> ${escaparHTML(dados.obs)}<br>
+      <b>Endereço:</b> Rua Miguel de frias, 09, 3º andar, Sala da Secretaria , Icaraí, Niterói - RJ <br>
       <b>Link da reunião:</b> <a href="${meetLink}" target="_blank">${meetLink}</a><br><br>
       Caso precise cancelar, clique <a href="${linkCancelar}" target="_blank">aqui</a>.
     `;
