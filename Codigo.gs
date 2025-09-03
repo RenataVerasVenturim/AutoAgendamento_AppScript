@@ -19,6 +19,7 @@ EM NENHUM CASO OS AUTORES OU DETENTORES DOS DIREITOS AUTORAIS SERÃO RESPONSÁVE
 DANOS OU OUTRAS RESPONSABILIDADES, SEJA EM AÇÃO DE CONTRATO, DELITO OU DE OUTRA FORMA, DECORRENTES DE,
 OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS NEGOCIAÇÕES NO PROGRAMA.
 */
+
 function doGet(e) {
   const user = Session.getActiveUser().getEmail();
   if (!user || !/@id\.uff\.br$/i.test(user)) {
@@ -28,17 +29,24 @@ function doGet(e) {
   const action = e && e.parameter && e.parameter.action;
   const token  = e && e.parameter && e.parameter.token;
 
-  // Rota de ações (cancelar)
+  // 🔹 Rota para abrir Termos de Privacidade
+  if (e && e.parameter && e.parameter.page === "TermosPrivacidade") {
+    return HtmlService.createTemplateFromFile("TermosPrivacidade")
+      .evaluate()
+      .setTitle("Termos de Privacidade")
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME)
+      .addMetaTag("viewport", "width=device-width, initial-scale=1");
+  }
+
+  // 🔹 Rota de ações (ex.: cancelar agendamento)
   if (action && token) {
     try {
-      // Valida que o token pertence ao ActiveUser (ou lança erro)
       _assertOwnerByToken_(token);
 
-      // Carrega página de ações com o token e ação pré-selecionada
-      const t = HtmlService.createTemplateFromFile("Acoes"); // novo HTML abaixo
+      const t = HtmlService.createTemplateFromFile("Acoes");
       t.userEmail = user.toUpperCase();
       t.token = token;
-      t.action = String(action).toLowerCase(); // "cancelar"
+      t.action = String(action).toLowerCase();
       return t.evaluate()
         .setTitle("UFF - Ações do Agendamento")
         .setSandboxMode(HtmlService.SandboxMode.IFRAME)
@@ -48,7 +56,7 @@ function doGet(e) {
     }
   }
 
-  // Página principal (sem ação)
+  // 🔹 Página principal
   const template = HtmlService.createTemplateFromFile("Principal1");
   template.userEmail = user.toUpperCase();
   return template.evaluate()
@@ -57,9 +65,12 @@ function doGet(e) {
     .addMetaTag("viewport", "width=device-width,initial-scale=1");
 }
 
-function Chamar(Arquivo){
+// Função para incluir arquivos HTML
+function Chamar(Arquivo) {
   return HtmlService.createHtmlOutputFromFile(Arquivo).getContent();
 }
+
+// Função para recuperar o ID do calendário
 function getCalendarId() {
   return PropertiesService.getScriptProperties().getProperty("CALENDAR_ID");
 }
