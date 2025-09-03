@@ -44,7 +44,7 @@ SOFTWARE.
     </header>
     <main>
         <div class="container">
-            <h3>Autoagendamento</h3>
+            <h3>Agendamento para retirada de certificados e diplomas de pós-graduação - PROPPI</h3>
             <p>Escolha seu horário disponível para atendimento</p>
             <form id="formAgendamento">
                 <div class="input-field"> <label for="nome">Nome completo:<span class="required">*</span></label> <input type="text" id="nome" name="nome"
@@ -54,8 +54,9 @@ SOFTWARE.
                 <div class="input-field"> <label for="Processo">Processo:</label> <input type="text" id="Processo"
                         name="Processo"> </div>
                 <div class="input-field"> <label for="email">E-mail:<span class="required">*</span></label> <input type="email" id="email" name="email"
-                        required value="<?= userEmail ?>" readonly> </div>
-                <div class="input-field"> <label for="data">Data:<span class="required">*</span></label> 
+                        required value="<?= userEmail ?>" readonly> </div>                
+                <div class="input-field"> <label for="data">Data :<span class="required">*</span> </label> 
+                <span class="tooltip" id="tooltipData" style="display:block;">(Formato: YYYY-mm-dd)</span>
                   <input type="text" id="data" name="data" placeholder="Carregando dias disponíveis..." required>
                 </div>
                 <div class="input-field"> <label for="hora">Horário:<span class="required">*</span></label> <select id="hora" name="hora" required>
@@ -64,6 +65,14 @@ SOFTWARE.
                 <div class="input-field"> <label for="duracao">Duração (minutos):</label> <input type="number"
                         id="duracao" name="duracao" min="0" max="60" placeholder="Selecione uma data" step="15"
                         readonly> </div>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="aceite" required>
+                  Li e concordo com os
+                  <a href="https://script.google.com/a/macros/id.uff.br/s/AKfycbzvr2wAgsNggctZtiAgSoUNznAFVMvwgJoRDV9x_Wda0a3Ub0WF8zMw-uLPmZUFU1Y8/exec?page=TermosPrivacidade"
+                    target="_blank">
+                    termos de privacidade
+                  </a>
+                </label>
                 <div class="input-field-obs"> <label for="obs">Assunto:</label> <textarea id="obs" name="obs" rows="4"
                         maxlength="340" placeholder="Digite o assunto do agendamento"></textarea>
                     <div id="contador">0 / 340 caracteres</div>
@@ -79,18 +88,20 @@ SOFTWARE.
                 <div id="RodapeMsg"></div>
             </div>
         </div>
-        <script> emailInput = document.getElementById('email'); nomeInput = document.getElementById('nome'); unidadeInput = document.getElementById('unidade'); emailInput.addEventListener("input", function () { this.value = this.value.toUpperCase(); }); nomeInput.addEventListener("input", function () { this.value = this.value.toUpperCase(); }); unidadeInput.addEventListener("input", function () { this.value = this.value.toUpperCase(); }); </script>
+        <script> 
+        emailInput = document.getElementById('email'); nomeInput = document.getElementById('nome'); unidadeInput = document.getElementById('unidade'); emailInput.addEventListener("input", function () { this.value = this.value.toUpperCase(); }); nomeInput.addEventListener("input", function () { this.value = this.value.toUpperCase(); }); unidadeInput.addEventListener("input", function () { this.value = this.value.toUpperCase(); }); 
+        
+        </script>
         <?!=Chamar("Form-js1")?>
     </main>
     <footer>
         <p>&copy; 2025 Universidade Federal Fluminense. Todos os direitos reservados.</p> <br>
         <p>PROPPI – Pró-Reitoria de Pesquisa, Pós-Graduação e Inovação
         <p>
-        <p>DIVISÃO FINANCEIRA, CONTÁBIL E DE PATRIMÔNIO (DFCP)</p> <br>
-        <p>Endereço: Rua Miguel de Frias, 9, 3º andar, sala 310, Icaraí, Niterói – RJ. CEP: 24220-900</p>
-        <p id="contact">Contato: compras.proppi@id.uff.br</p> <br>
-        <p>Os dados exibidos nesta página são acessíveis de acordo com a Lei Geral de Proteção de Dados (LGPD).
-            Tratam-se de informações necessárias à execução de políticas públicas previstas em leis e regulamentos.</p>
+        <p>SECRETARIA DE CERTIFICADOS E DIPLOMAS</p> <br>
+        <p>Endereço: Rua Miguel de Frias, 9, 3º andar, Icaraí, Niterói – RJ. CEP: 24220-900</p>
+        <p id="contact">Contato: certificado.proppi@id.uff.br</p> <br>
+        
     </footer>
 </body>
 
