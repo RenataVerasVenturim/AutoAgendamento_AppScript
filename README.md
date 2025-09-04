@@ -36,6 +36,8 @@ RNF02 – O sistema deve possuir interface simples e intuitiva.
 RNF03 – O sistema deve seguir padrões de segurança da informação, como sanitizar inputs do lado do servidor, rating limit, confidencialidade com base na conta id.uff.br
 
 RNF04 – O sistema deve seguir a LGPD, garantindo proteção de dados pessoais.
+# Fluxo Conceitual
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/15a9e7fe-e7da-48e3-8d8f-48201effadcb" />
 
 # Programas necessários
 
