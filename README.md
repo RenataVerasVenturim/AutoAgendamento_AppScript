@@ -23,7 +23,9 @@ RF07 – O sistema deve enviar um aviso por e-mail ao usuário agendado com 24h 
 
 RF08 – O sistema não deve permitir agendamento para alunos que não estão com certificado pronto (base sheets)
 
-RF09 – O sistema não deve bloquear agenda em dias com horários indisponíveis e feriados
+RF09 – O sistema deve bloquear agenda em dias com horários indisponíveis e feriados
+
+RF10- O sistema deve identificar assinatura de consentimento de Termo de Privacidade e data de assinatura
 
 # Requisitos Não Funcionais :
 
