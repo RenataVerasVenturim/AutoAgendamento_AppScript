@@ -1,5 +1,7 @@
 # AutoAgendamento_AppScript
 
+Projeto de extensão: https://linktr.ee/descompex
+
 Agendamento do usuário via link, com inserção no google agenda da unidade com base em horários e dias definidos em planilha sheets e com check ao google agenda do setor. E mail de confirmação com botão de cancelar disponível ao usuário. Integração com google sheets, agenda google, google meet e gmail.
 
 <img width="1903" height="913" alt="image" src="https://github.com/user-attachments/assets/030493e4-6612-42fa-a19b-ce81e134c5dd" />
